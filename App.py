@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import ast
-import tensorflow as tf
 from collections import Counter
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -28,9 +27,10 @@ def load_data():
     df['weighted_score']=((df['vote_count']/(df['vote_count']+m))*df['vote_average']+(m/(df['vote_count']+m))*C)
     return df,sim,img_sim
 
-@st.cache_resource
-def load_model():
-    return tf.keras.models.load_model("ncf_model.keras")
+@st.cache_data
+def load_predictions():
+    return pd.read_csv("ncf_predictions.csv")
+preds_df=load_predictions()
 
 @st.cache_data
 def get_genres(df,n=5):
@@ -40,7 +40,6 @@ def get_genres(df,n=5):
     return [g for g,_ in c.most_common(n)]
 
 df,sim,img_sim=load_data()
-model=load_model()
 all_genres=get_genres(df)
 
 def recommend(title,mode="hybrid"):
@@ -61,14 +60,11 @@ def recommend(title,mode="hybrid"):
     return results
 
 def recommend_ncf(user_id,top_n=10):
-    all_ids=np.arange(len(df))
-    user_arr=np.full(len(df),user_id)
-    preds=model.predict([user_arr,all_ids],verbose=0)
-    pred_ratings=preds.flatten()*5.0
-    top_idx=np.argsort(pred_ratings)[::-1][:top_n]
+    user_preds=preds_df[preds_df['user_id']==user_id].head(top_n)
     results=[]
-    for idx in top_idx:
-        results.append({"title":df['title'].iloc[idx],"vote_average":round(float(pred_ratings[idx]),2),"poster_path":df['poster_path'].iloc[idx]})
+    for _,row in user_preds.iterrows():
+        idx=int(row['movie_idx'])
+        results.append({"title":df['title'].iloc[idx],"vote_average":row['predicted_rating'],"poster_path":df['poster_path'].iloc[idx]})
     return results
 
 if "current_movie" not in st.session_state:
