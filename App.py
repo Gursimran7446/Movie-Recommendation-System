@@ -113,13 +113,9 @@ st.title("Movie Recommendation System")
 if st.session_state.page=="Get Recommendations":
     st.write("Pick a movie to get recommendations, or click any title to keep exploring.")
     movie_list=sorted(df['title'].dropna().unique().tolist())
-    col1,col2=st.columns([3,1])
-    with col1:
-        selected=st.selectbox("Choose a movie:",movie_list,key="movie_select")
-    with col2:
-        if st.button("Find Similar Movies",type="primary"):
-            select_movie(selected)
-            # st.session_state.current_movie=selected
+    selected=st.selectbox("Choose a movie:",movie_list,key="movie_select")
+    if st.button("Find",type="primary"):
+        st.session_state.current_movie=selected
     if st.session_state.current_movie:
         c1,c2=st.columns([1,6])
         with c1:
