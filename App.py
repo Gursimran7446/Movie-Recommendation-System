@@ -118,8 +118,8 @@ if st.session_state.page=="Get Recommendations":
         selected=st.selectbox("Choose a movie:",movie_list,key="movie_select")
     with col2:
         if st.button("Find Similar Movies",type="primary"):
-            # select_movie(selected)
-            st.session_state.current_movie=selected
+            select_movie(selected)
+            # st.session_state.current_movie=selected
     if st.session_state.current_movie:
         c1,c2=st.columns([1,6])
         with c1:
